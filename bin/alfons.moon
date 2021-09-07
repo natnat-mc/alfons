@@ -23,12 +23,30 @@ args = getopt {...}
 
 -- optionally accept a custom file
 FILE = do
+  -- load from an explicit file
   if     args.f                  then args.f
   elseif args.file               then args.file
+  -- load from .
   elseif fs.exists "Alfons.lua"  then "Alfons.lua"
   elseif fs.exists "Alfons.moon" then "Alfons.moon"
   elseif fs.exists "Alfons.tl"   then "Alfons.tl"
-  else errors 1, "No Taskfile found."
+  -- recursively load
+  else
+    local dir, lastDir, file
+    dir = fs.currentDir!
+    file = nil
+    while not file
+      if fs.exists fs.combine dir, "Alfons.lua"
+        file = fs.combine dir, "Alfons.lua"
+      elseif fs.exists fs.combine dir, "Alfons.moon"
+        file = fs.combine dir, "Alfons.moon"
+      elseif fs.exists fs.combine dir, "Alfons.tl"
+        file = fs.combine dir, "Alfons.tl"
+      else
+        lastDir = dir
+        dir = fs.reduce fs.combine dir, '..'
+        error "No Alfonsfile found." if lastDir == dir
+    file
 
 -- Also accept a custom language
 LANGUAGE = do

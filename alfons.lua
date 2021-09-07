@@ -1184,7 +1184,25 @@ do
   elseif fs.exists("Alfons.tl") then
     FILE = "Alfons.tl"
   else
-    FILE = errors(1, "No Taskfile found.")
+    local dir, lastDir, file
+    dir = fs.currentDir()
+    file = nil
+    while not file do
+      if fs.exists(fs.combine(dir, "Alfons.lua")) then
+        file = fs.combine(dir, "Alfons.lua")
+      elseif fs.exists(fs.combine(dir, "Alfons.moon")) then
+        file = fs.combine(dir, "Alfons.moon")
+      elseif fs.exists(fs.combine(dir, "Alfons.tl")) then
+        file = fs.combine(dir, "Alfons.tl")
+      else
+        lastDir = dir
+        dir = fs.reduce(fs.combine(dir, '..'))
+        if lastDir == dir then
+          error("No Alfonsfile found.")
+        end
+      end
+    end
+    FILE = file
   end
 end
 local LANGUAGE
