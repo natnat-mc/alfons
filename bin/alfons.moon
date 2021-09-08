@@ -32,20 +32,24 @@ FILE = do
   elseif fs.exists "Alfons.tl"   then "Alfons.tl"
   -- recursively load
   else
-    local dir, lastDir, file
-    dir = fs.currentDir!
+    local cwd, dir, lastDir, file, rel
+    cwd  = fs.currentDir!
+    dir  = cwd
     file = nil
+    rel  = '..'
     while not file
-      if fs.exists fs.combine dir, "Alfons.lua"
-        file = fs.combine dir, "Alfons.lua"
-      elseif fs.exists fs.combine dir, "Alfons.moon"
-        file = fs.combine dir, "Alfons.moon"
-      elseif fs.exists fs.combine dir, "Alfons.tl"
-        file = fs.combine dir, "Alfons.tl"
+      lastDir = dir
+      dir     = fs.reduce fs.combine dir, rel
+      errors 1, "No Alfonsfile found." if lastDir == dir
+      if     fs.exists fs.combine rel, "Alfons.lua"
+        file = "Alfons.lua"
+      elseif fs.exists fs.combine rel, "Alfons.moon"
+        file = "Alfons.moon"
+      elseif fs.exists fs.combine rel, "Alfons.tl"
+        file = "Alfons.tl"
       else
-        lastDir = dir
-        dir = fs.reduce fs.combine dir, '..'
-        error "No Alfonsfile found." if lastDir == dir
+        rel = "#{rel}/.."
+    fs.changeDir rel
     file
 
 -- Also accept a custom language

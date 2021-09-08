@@ -296,6 +296,15 @@ npairs = (t) ->
     i += 1
     return keys[i], t[keys[i]] if i <= n
 
+-- mode (mode: string)
+-- mode "relative" for example will change to the directory alfons was called from, if it found its taskfile with a recursive search
+mode = (mode) ->
+  switch mode
+    when "relative"
+      fs.changeDir os.getenv "PWD"
+    else
+      errors 1, "Mode \"#{mode}\" is unknown to Alfons"
+
 {
   :contains
   :prints, :printError
@@ -306,4 +315,5 @@ npairs = (t) ->
   :build, :watch
   :env, :ask, :show
   :npairs
+  :mode
 }

@@ -963,6 +963,15 @@ npairs = function(t)
     end
   end
 end
+local mode
+mode = function(mode)
+  local _exp_0 = mode
+  if "relative" == _exp_0 then
+    return fs.changeDir(os.getenv("PWD"))
+  else
+    return errors(1, "Mode \"" .. tostring(mode) .. "\" is unknown to Alfons")
+  end
+end
 return {
   contains = contains,
   prints = prints,
@@ -986,7 +995,8 @@ return {
   env = env,
   ask = ask,
   show = show,
-  npairs = npairs
+  npairs = npairs,
+  mode = mode
 }
 end
 end
@@ -1184,24 +1194,28 @@ do
   elseif fs.exists("Alfons.tl") then
     FILE = "Alfons.tl"
   else
-    local dir, lastDir, file
-    dir = fs.currentDir()
+    local cwd, dir, lastDir, file, rel
+    cwd = fs.currentDir()
+    dir = cwd
     file = nil
+    rel = '..'
     while not file do
-      if fs.exists(fs.combine(dir, "Alfons.lua")) then
-        file = fs.combine(dir, "Alfons.lua")
-      elseif fs.exists(fs.combine(dir, "Alfons.moon")) then
-        file = fs.combine(dir, "Alfons.moon")
-      elseif fs.exists(fs.combine(dir, "Alfons.tl")) then
-        file = fs.combine(dir, "Alfons.tl")
+      lastDir = dir
+      dir = fs.reduce(fs.combine(dir, rel))
+      if lastDir == dir then
+        errors(1, "No Alfonsfile found.")
+      end
+      if fs.exists(fs.combine(rel, "Alfons.lua")) then
+        file = "Alfons.lua"
+      elseif fs.exists(fs.combine(rel, "Alfons.moon")) then
+        file = "Alfons.moon"
+      elseif fs.exists(fs.combine(rel, "Alfons.tl")) then
+        file = "Alfons.tl"
       else
-        lastDir = dir
-        dir = fs.reduce(fs.combine(dir, '..'))
-        if lastDir == dir then
-          error("No Alfonsfile found.")
-        end
+        rel = tostring(rel) .. "/.."
       end
     end
+    fs.changeDir(rel)
     FILE = file
   end
 end
